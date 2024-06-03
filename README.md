@@ -151,6 +151,95 @@ func main() {
 }
 ```
 
+You can fetch a single record by its ID using the `One` method to get the raw map, or the `OneTo` method to unmarshal directly into a custom struct.
+
+Here's an example of fetching a single record as a map:
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/pluja/pocketbase"
+)
+
+func main() {
+	client := pocketbase.NewClient("http://localhost:8090")
+
+	// Fetch a single record by ID
+	record, err := client.One("posts_public", "record_id")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Access the record fields
+	log.Print(record["field"])
+}
+```
+
+
+You can fetch and unmarshal a single record directly into your custom struct using `OneTo`:
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/pluja/pocketbase"
+)
+
+type Post struct {
+	ID    string `json:"id"`
+	Field string `json:"field"`
+}
+
+func main() {
+	client := pocketbase.NewClient("http://localhost:8090")
+
+	// Fetch a single record by ID and unmarshal into struct
+	var post Post
+	err := client.OneTo("posts", "post_id", &post)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Access the struct fields
+	log.Printf("Fetched Post: %+v\n", post)
+}
+```
+
+### More Examples and Documentation
+
+For more examples, you can check:
+- [example file](./example/main.go)
+- [tests for the client](./client_test.go)
+- [tests for the collection](./collection_test.go)
+
+Remember to start the PocketBase server before running examples with the `make serve` command.
+
+## Development
+
+### Makefile Targets
+
+- `make serve`: Builds all binaries and runs the local PocketBase server, creating collections and sample data based on [migration files](./migrations).
+- `make test`: Runs tests (ensure that the PocketBase server is running with `make serve` beforehand).
+- `make check`: Runs linters and security checks (run this before committing).
+- `make build`: Builds all binaries (examples and PocketBase server).
+- `make help`: Shows help and other targets.
+
+## Contributing
+- Go 1.20+ (for making changes in the Go code).
+- While developing, use the `WithDebug()` client option to see HTTP requests and responses.
+- Ensure that all checks are green (run `make check` before committing).
+- Ensure that all tests pass (run `make test` before committing).
+- Create a PR with your changes and wait for review.
+
+```
+
+Add these examples to your `README.md` under the "Usage & examples" section to provide clear guidance on how to use the `One` and `FetchOne` functions. These examples give quick insights into how to fetch a single record either as a raw map or unmarshalled into a custom struct.
+
 More examples can be found in:
 * [example file](./example/main.go)
 * [tests for the client](./client_test.go)
