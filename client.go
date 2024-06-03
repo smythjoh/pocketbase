@@ -17,6 +17,7 @@ type (
 		client     *resty.Client
 		url        string
 		authorizer authStore
+		token      string
 	}
 	ClientOption func(*Client)
 )
@@ -55,6 +56,12 @@ func WithAdminEmailPassword(email, password string) ClientOption {
 func WithUserEmailPassword(email, password string) ClientOption {
 	return func(c *Client) {
 		c.authorizer = newAuthorizeEmailPassword(c.client, c.url+"/api/collections/users/auth-with-password", email, password)
+	}
+}
+
+func WithUserEmailPasswordAndCollection(email, password, collection string) ClientOption {
+	return func(c *Client) {
+		c.authorizer = newAuthorizeEmailPassword(c.client, c.url+"/api/collections/"+collection+"/auth-with-password", email, password)
 	}
 }
 
@@ -303,4 +310,16 @@ func (c *Client) FullList(collection string, params ParamsList) (ResponseList[ma
 
 func (c *Client) AuthStore() authStore {
 	return c.authorizer
+}
+
+func (c *Client) Backup() Backup {
+	return Backup{
+		Client: c,
+	}
+}
+
+func (c *Client) Files() Files {
+	return Files{
+		Client: c,
+	}
 }

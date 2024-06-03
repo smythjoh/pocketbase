@@ -31,6 +31,7 @@ This SDK doesn't have feature parity with official SDKs and supports the followi
 * **Update**
 * **Delete**
 * **List** - with pagination, filtering, sorting
+* **Backups** - with create, restore, delete, upload, download and list all available downloads
 * **Other** - feel free to create an issue or contribute
 
 ### Usage & examples
@@ -48,12 +49,24 @@ import (
 
 func main() {
 	client := pocketbase.NewClient("http://localhost:8090")
+
+	// You can list with pagination:
 	response, err := client.List("posts_public", pocketbase.ParamsList{
 		Page: 1, Size: 10, Sort: "-created", Filters: "field~'test'",
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Print(response.TotalItems)
+
+	// Or you can use the FullList method (v0.0.7)
+	response, err := client.FullList("posts_public", pocketbase.ParamsList{
+		Sort: "-created", Filters: "field~'test'",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Print(response.TotalItems)
 }
 ```
@@ -101,8 +114,18 @@ type post struct {
 func main() {
 	client := pocketbase.NewClient("http://localhost:8090")
 	collection := pocketbase.CollectionSet[post](client, "posts_public")
+
+	// List with pagination
 	response, err := collection.List(pocketbase.ParamsList{
 		Page: 1, Size: 10, Sort: "-created", Filters: "field~'test'",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// FullList also available for collections:
+	response, err := collection.FullList(pocketbase.ParamsList{
+		Sort: "-created", Filters: "field~'test'",
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -178,7 +201,6 @@ func main() {
 }
 ```
 
-
 You can fetch and unmarshal a single record directly into your custom struct using `OneTo`:
 
 ```go
@@ -210,35 +232,59 @@ func main() {
 }
 ```
 
-### More Examples and Documentation
+Trigger to create a new backup.
 
-For more examples, you can check:
-- [example file](./example/main.go)
-- [tests for the client](./client_test.go)
-- [tests for the collection](./collection_test.go)
+```go
+package main
 
-Remember to start the PocketBase server before running examples with the `make serve` command.
+import (
+	"log"
 
-## Development
+	"github.com/pluja/pocketbase"
+)
 
-### Makefile Targets
-
-- `make serve`: Builds all binaries and runs the local PocketBase server, creating collections and sample data based on [migration files](./migrations).
-- `make test`: Runs tests (ensure that the PocketBase server is running with `make serve` beforehand).
-- `make check`: Runs linters and security checks (run this before committing).
-- `make build`: Builds all binaries (examples and PocketBase server).
-- `make help`: Shows help and other targets.
-
-## Contributing
-- Go 1.20+ (for making changes in the Go code).
-- While developing, use the `WithDebug()` client option to see HTTP requests and responses.
-- Ensure that all checks are green (run `make check` before committing).
-- Ensure that all tests pass (run `make test` before committing).
-- Create a PR with your changes and wait for review.
-
+func main() {
+	client := pocketbase.NewClient("http://localhost:8090", 
+		pocketbase.WithAdminEmailPassword("admin@admin.com", "admin@admin.com"))
+	err := client.Backup().Create("foobar.zip")
+	if err != nil {
+	    log.Println("create new backup failed")
+		log.Fatal(err)
+	}
+}
 ```
 
-Add these examples to your `README.md` under the "Usage & examples" section to provide clear guidance on how to use the `One` and `FetchOne` functions. These examples give quick insights into how to fetch a single record either as a raw map or unmarshalled into a custom struct.
+
+Authenticate user from collection
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/pluja/pocketbase"
+)
+
+type User struct {
+	AuthProviders    []interface{} `json:"authProviders"`
+	UsernamePassword bool          `json:"usernamePassword"`
+	EmailPassword    bool          `json:"emailPassword"`
+	OnlyVerified     bool          `json:"onlyVerified"`
+}
+
+func main() {
+	client := pocketbase.NewClient("http://localhost:8090")
+	response, err := pocketbase.CollectionSet[User](client, "users").AuthWithPassword("user", "user@user.com")
+	if err != nil {
+		log.Println("user-authentication failed")
+		log.Fatal(err)
+		return
+	}
+	log.Println("authentication successful")
+	log.Printf("JWT-token: %s\n", response.Token)
+}
+```
 
 More examples can be found in:
 * [example file](./example/main.go)
@@ -256,7 +302,7 @@ More examples can be found in:
 * `make help` - shows help and other targets
 
 ## Contributing
-* Go 1.20+ (for making changes in the Go code)
+* Go 1.21+ (for making changes in the Go code)
 * While developing use `WithDebug()` client option to see HTTP requests and responses
 * Make sure that all checks are green (run `make check` before commit)
 * Make sure that all tests pass (run `make test` before commit)
