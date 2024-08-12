@@ -24,3 +24,4 @@ bin/
 
 # SQLite databases
 resources/*.3db
+/pb_data/*

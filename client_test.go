@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/pluja/pocketbase/migrations"
+	"github.com/abhi2303237/pocketbase/migrations"
 )
 
 const (
