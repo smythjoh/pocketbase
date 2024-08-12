@@ -4,9 +4,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pluja/pocketbase/migrations"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pluja/pocketbase/migrations"
 )
 
 const (
@@ -380,4 +381,64 @@ func TestClient_Create(t *testing.T) {
 			assert.Equal(t, tt.wantID, r.ID != "")
 		})
 	}
+}
+
+func TestClient_One(t *testing.T) {
+	client := NewClient(defaultURL)
+	field := "value_" + time.Now().Format(time.StampMilli)
+
+	// Get non-existing item
+	_, err := client.One(migrations.PostsPublic, "non_existing_id")
+	assert.Error(t, err)
+
+	// Create temporary item
+	resultCreated, err := client.Create(migrations.PostsPublic, map[string]any{
+		"field": field,
+	})
+	assert.NoError(t, err)
+	assert.NotEmpty(t, resultCreated.ID)
+
+	// Get existing item
+	result, err := client.One(migrations.PostsPublic, resultCreated.ID)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, field, result["field"])
+
+	// Clean up: Delete temporary item
+	err = client.Delete(migrations.PostsPublic, resultCreated.ID)
+	assert.NoError(t, err)
+}
+
+func TestClient_OneTo(t *testing.T) {
+	client := NewClient(defaultURL)
+	field := "value_" + time.Now().Format(time.StampMilli)
+
+	// Get non-existing item
+	var nonExistingResult map[string]any
+	err := client.OneTo(migrations.PostsPublic, "non_existing_id", &nonExistingResult)
+	assert.Error(t, err)
+
+	// Create temporary item
+	resultCreated, err := client.Create(migrations.PostsPublic, map[string]any{
+		"field": field,
+	})
+	assert.NoError(t, err)
+	assert.NotEmpty(t, resultCreated.ID)
+
+	// Define a struct for the response
+	type Post struct {
+		ID    string `json:"id"`
+		Field string `json:"field"`
+	}
+
+	// Get existing item
+	var result Post
+	err = client.OneTo(migrations.PostsPublic, resultCreated.ID, &result)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, field, result.Field)
+
+	// Clean up: Delete temporary item
+	err = client.Delete(migrations.PostsPublic, resultCreated.ID)
+	assert.NoError(t, err)
 }

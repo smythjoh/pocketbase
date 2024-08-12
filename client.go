@@ -17,6 +17,7 @@ type (
 		client     *resty.Client
 		url        string
 		authorizer authStore
+		token      string
 	}
 	ClientOption func(*Client)
 )
@@ -55,6 +56,12 @@ func WithAdminEmailPassword(email, password string) ClientOption {
 func WithUserEmailPassword(email, password string) ClientOption {
 	return func(c *Client) {
 		c.authorizer = newAuthorizeEmailPassword(c.client, c.url+"/api/collections/users/auth-with-password", email, password)
+	}
+}
+
+func WithUserEmailPasswordAndCollection(email, password, collection string) ClientOption {
+	return func(c *Client) {
+		c.authorizer = newAuthorizeEmailPassword(c.client, c.url+"/api/collections/"+collection+"/auth-with-password", email, password)
 	}
 }
 
@@ -155,6 +162,68 @@ func (c *Client) Delete(collection string, id string) error {
 	return nil
 }
 
+func (c *Client) One(collection string, id string) (map[string]any, error) {
+	var response map[string]any
+
+	if err := c.Authorize(); err != nil {
+		return response, err
+	}
+
+	request := c.client.R().
+		SetHeader("Content-Type", "application/json").
+		SetPathParam("collection", collection).
+		SetPathParam("id", id)
+
+	resp, err := request.Get(c.url + "/api/collections/{collection}/records/{id}")
+	if err != nil {
+		return response, fmt.Errorf("[one] can't send get request to pocketbase, err %w", err)
+	}
+
+	if resp.IsError() {
+		return response, fmt.Errorf("[one] pocketbase returned status: %d, msg: %s, err %w",
+			resp.StatusCode(),
+			resp.String(),
+			ErrInvalidResponse,
+		)
+	}
+
+	if err := json.Unmarshal(resp.Body(), &response); err != nil {
+		return response, fmt.Errorf("[one] can't unmarshal response, err %w", err)
+	}
+
+	return response, nil
+}
+
+func (c *Client) OneTo(collection string, id string, result any) error {
+	if err := c.Authorize(); err != nil {
+		return err
+	}
+
+	request := c.client.R().
+		SetHeader("Content-Type", "application/json").
+		SetPathParam("collection", collection).
+		SetPathParam("id", id)
+
+	resp, err := request.Get(c.url + "/api/collections/{collection}/records/{id}")
+	if err != nil {
+		return fmt.Errorf("[oneTo] can't send get request to pocketbase, err %w", err)
+	}
+
+	if resp.IsError() {
+		return fmt.Errorf("[oneTo] pocketbase returned status: %d, msg: %s, err %w",
+			resp.StatusCode(),
+			resp.String(),
+			ErrInvalidResponse,
+		)
+	}
+
+	if err := json.Unmarshal(resp.Body(), result); err != nil {
+		return fmt.Errorf("[oneTo] can't unmarshal response, err %w", err)
+	}
+
+	return nil
+}
+
 func (c *Client) List(collection string, params ParamsList) (ResponseList[map[string]any], error) {
 	var response ResponseList[map[string]any]
 
@@ -208,6 +277,49 @@ func (c *Client) List(collection string, params ParamsList) (ResponseList[map[st
 	return response, nil
 }
 
+func (c *Client) FullList(collection string, params ParamsList) (ResponseList[map[string]any], error) {
+	var response ResponseList[map[string]any]
+	params.Page = 1
+	params.Size = 500
+
+	if err := c.Authorize(); err != nil {
+		return response, err
+	}
+
+	r, e := c.List(collection, params)
+	if e != nil {
+		return response, e
+	}
+	response.Items = append(response.Items, r.Items...)
+	response.Page = r.Page
+	response.PerPage = r.PerPage
+	response.TotalItems = r.TotalItems
+	response.TotalPages = r.TotalPages
+
+	for i := 2; i <= r.TotalPages; i++ { // Start from page 2 because first page is already fetched
+		params.Page = i
+		r, e := c.List(collection, params)
+		if e != nil {
+			return response, e
+		}
+		response.Items = append(response.Items, r.Items...)
+	}
+
+	return response, nil
+}
+
 func (c *Client) AuthStore() authStore {
 	return c.authorizer
+}
+
+func (c *Client) Backup() Backup {
+	return Backup{
+		Client: c,
+	}
+}
+
+func (c *Client) Files() Files {
+	return Files{
+		Client: c,
+	}
 }

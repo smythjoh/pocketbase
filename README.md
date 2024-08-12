@@ -31,6 +31,7 @@ This SDK doesn't have feature parity with official SDKs and supports the followi
 * **Update**
 * **Delete**
 * **List** - with pagination, filtering, sorting
+* **Backups** - with create, restore, delete, upload, download and list all available downloads
 * **Other** - feel free to create an issue or contribute
 
 ### Usage & examples
@@ -48,12 +49,24 @@ import (
 
 func main() {
 	client := pocketbase.NewClient("http://localhost:8090")
+
+	// You can list with pagination:
 	response, err := client.List("posts_public", pocketbase.ParamsList{
 		Page: 1, Size: 10, Sort: "-created", Filters: "field~'test'",
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Print(response.TotalItems)
+
+	// Or you can use the FullList method (v0.0.7)
+	response, err := client.FullList("posts_public", pocketbase.ParamsList{
+		Sort: "-created", Filters: "field~'test'",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Print(response.TotalItems)
 }
 ```
@@ -101,8 +114,18 @@ type post struct {
 func main() {
 	client := pocketbase.NewClient("http://localhost:8090")
 	collection := pocketbase.CollectionSet[post](client, "posts_public")
+
+	// List with pagination
 	response, err := collection.List(pocketbase.ParamsList{
 		Page: 1, Size: 10, Sort: "-created", Filters: "field~'test'",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// FullList also available for collections:
+	response, err := collection.FullList(pocketbase.ParamsList{
+		Sort: "-created", Filters: "field~'test'",
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -151,6 +174,118 @@ func main() {
 }
 ```
 
+You can fetch a single record by its ID using the `One` method to get the raw map, or the `OneTo` method to unmarshal directly into a custom struct.
+
+Here's an example of fetching a single record as a map:
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/pluja/pocketbase"
+)
+
+func main() {
+	client := pocketbase.NewClient("http://localhost:8090")
+
+	// Fetch a single record by ID
+	record, err := client.One("posts_public", "record_id")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Access the record fields
+	log.Print(record["field"])
+}
+```
+
+You can fetch and unmarshal a single record directly into your custom struct using `OneTo`:
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/pluja/pocketbase"
+)
+
+type Post struct {
+	ID    string `json:"id"`
+	Field string `json:"field"`
+}
+
+func main() {
+	client := pocketbase.NewClient("http://localhost:8090")
+
+	// Fetch a single record by ID and unmarshal into struct
+	var post Post
+	err := client.OneTo("posts", "post_id", &post)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Access the struct fields
+	log.Printf("Fetched Post: %+v\n", post)
+}
+```
+
+Trigger to create a new backup.
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/pluja/pocketbase"
+)
+
+func main() {
+	client := pocketbase.NewClient("http://localhost:8090", 
+		pocketbase.WithAdminEmailPassword("admin@admin.com", "admin@admin.com"))
+	err := client.Backup().Create("foobar.zip")
+	if err != nil {
+	    log.Println("create new backup failed")
+		log.Fatal(err)
+	}
+}
+```
+
+
+Authenticate user from collection
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/pluja/pocketbase"
+)
+
+type User struct {
+	AuthProviders    []interface{} `json:"authProviders"`
+	UsernamePassword bool          `json:"usernamePassword"`
+	EmailPassword    bool          `json:"emailPassword"`
+	OnlyVerified     bool          `json:"onlyVerified"`
+}
+
+func main() {
+	client := pocketbase.NewClient("http://localhost:8090")
+	response, err := pocketbase.CollectionSet[User](client, "users").AuthWithPassword("user", "user@user.com")
+	if err != nil {
+		log.Println("user-authentication failed")
+		log.Fatal(err)
+		return
+	}
+	log.Println("authentication successful")
+	log.Printf("JWT-token: %s\n", response.Token)
+}
+```
+
 More examples can be found in:
 * [example file](./example/main.go)
 * [tests for the client](./client_test.go)
@@ -167,7 +302,7 @@ More examples can be found in:
 * `make help` - shows help and other targets
 
 ## Contributing
-* Go 1.20+ (for making changes in the Go code)
+* Go 1.21+ (for making changes in the Go code)
 * While developing use `WithDebug()` client option to see HTTP requests and responses
 * Make sure that all checks are green (run `make check` before commit)
 * Make sure that all tests pass (run `make test` before commit)
