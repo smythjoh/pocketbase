@@ -1,4 +1,4 @@
-[![Check & test & build](https://github.com/abhi2303237/pocketbase/actions/workflows/main.yml/badge.svg)](https://github.com/abhi2303237/pocketbase/actions/workflows/main.yml)
+[![Check & test & build](https://github.com/smythjoh/pocketbase/actions/workflows/main.yml/badge.svg)](https://github.com/smythjoh/pocketbase/actions/workflows/main.yml)
 [![PocketBase](https://pocketbase.io/images/logo.svg)](https://pocketbase.io)
 
 ### Project
@@ -44,7 +44,7 @@ package main
 import (
 	"log"
 
-	"github.com/abhi2303237/pocketbase"
+	"github.com/smythjoh/pocketbase"
 )
 
 func main() {
@@ -79,7 +79,7 @@ package main
 import (
 	"log"
 
-	"github.com/abhi2303237/pocketbase"
+	"github.com/smythjoh/pocketbase"
 )
 
 func main() {
@@ -102,7 +102,7 @@ package main
 import (
 	"log"
 
-	"github.com/abhi2303237/pocketbase"
+	"github.com/smythjoh/pocketbase"
 )
 
 type post struct {
@@ -143,7 +143,7 @@ package main
 import (
 	"log"
 
-	"github.com/abhi2303237/pocketbase"
+	"github.com/smythjoh/pocketbase"
 )
 
 type post struct {
@@ -184,7 +184,7 @@ package main
 import (
 	"log"
 
-	"github.com/abhi2303237/pocketbase"
+	"github.com/smythjoh/pocketbase"
 )
 
 func main() {
@@ -209,7 +209,7 @@ package main
 import (
 	"log"
 
-	"github.com/abhi2303237/pocketbase"
+	"github.com/smythjoh/pocketbase"
 )
 
 type Post struct {
@@ -240,7 +240,7 @@ package main
 import (
 	"log"
 
-	"github.com/abhi2303237/pocketbase"
+	"github.com/smythjoh/pocketbase"
 )
 
 func main() {
@@ -263,7 +263,7 @@ package main
 import (
 	"log"
 
-	"github.com/abhi2303237/pocketbase"
+	"github.com/smythjoh/pocketbase"
 )
 
 type User struct {
