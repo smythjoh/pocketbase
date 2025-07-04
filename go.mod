@@ -1,9 +1,10 @@
 module github.com/smythjoh/pocketbase
 
-go 1.21.9
+go 1.21.11
 
 require (
 	github.com/SierraSoftworks/multicast/v2 v2.0.0
+	github.com/abhi2303237/pocketbase v0.0.2
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/donovanhide/eventsource v0.0.0-20210830082556-c59027999da0
 	github.com/duke-git/lancet/v2 v2.3.0
@@ -18,7 +19,6 @@ require (
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
-	github.com/aws/aws-sdk-go v1.51.26 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.26.1 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.2 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.27.11 // indirect
@@ -72,13 +72,13 @@ require (
 	gocloud.dev v0.37.0 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/image v0.15.0 // indirect
+	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/oauth2 v0.19.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.20.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/api v0.176.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240415180920-8c6c420018be // indirect
