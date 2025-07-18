@@ -29,7 +29,8 @@ func (c *Collections) List(params ParamsList) (ResponseList[models.Collection], 
 	request := c.client.R().
 		SetHeader("Content-Type", "application/json").
 		SetQueryParam("page", fmt.Sprintf("%v", params.Page)).
-		SetQueryParam("perPage", fmt.Sprintf("%v", params.Size))
+		SetQueryParam("perPage", fmt.Sprintf("%v", params.Size)).
+		SetQueryParam("filters", params.Filters)
 
 	resp, err := request.Get(c.BasePath)
 	if err != nil {

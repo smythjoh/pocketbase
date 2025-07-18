@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/abhi2303237/pocketbase"
+	"github.com/smythjoh/pocketbase"
 	"github.com/mitchellh/mapstructure"
 )
 

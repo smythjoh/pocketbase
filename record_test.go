@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/abhi2303237/pocketbase/migrations"
+	"github.com/smythjoh/pocketbase/migrations"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

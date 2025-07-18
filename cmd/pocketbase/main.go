@@ -5,7 +5,7 @@ import (
 
 	"github.com/pocketbase/pocketbase"
 
-	_ "github.com/abhi2303237/pocketbase/migrations"
+	_ "github.com/smythjoh/pocketbase/migrations"
 )
 
 // func main() {
