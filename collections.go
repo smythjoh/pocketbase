@@ -30,7 +30,7 @@ func (c *Collections) List(params ParamsList) (ResponseList[models.Collection], 
 		SetHeader("Content-Type", "application/json").
 		SetQueryParam("page", fmt.Sprintf("%v", params.Page)).
 		SetQueryParam("perPage", fmt.Sprintf("%v", params.Size)).
-		SetQueryParam("filters", params.Filters)
+		SetQueryParam("filters", "name~'TBL'")
 
 	resp, err := request.Get(c.BasePath)
 	if err != nil {
